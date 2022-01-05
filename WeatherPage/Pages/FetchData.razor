@@ -1,0 +1,58 @@
+﻿@page "/fetchdata"
+
+@using WeatherPage.Data
+@inject WeatherForecastService ForecastService
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from a service.</p>
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <input type="text" @bind="CityName" @onkeydown="ValChanged" @oninput="@((e) => { CityName=(string)e.Value;})" />
+    <button type="button" value="enter"></button>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+           
+        </tbody>
+    </table>
+    @forecasts.name;
+    
+}
+
+@code {
+    public WeatherForecastModel forecasts;
+    string CityName { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        forecasts = await ForecastService.GetForecastAsync("London");
+
+    }
+
+    public async void ValChanged(KeyboardEventArgs args)
+    {
+        if(args.Key == "Enter")
+        {
+            forecasts = await ForecastService.GetForecastAsync(CityName);
+            
+            StateHasChanged(); //nezmeni se vzhled stranky pokud se nezavola tento pan CO JE DELEGAT
+            
+        }
+
+    }
+
+}
