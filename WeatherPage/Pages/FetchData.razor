@@ -6,7 +6,7 @@
 
 <h1 style="text-align:center">Aktuální počasí</h1>
 
-<p>Do okýnka napište název města a aplikace vám ukáže aktuální počasí.</p>
+<p style="text-align:center">Do okýnka napište název města a aplikace vám ukáže aktuální počasí.</p>
 
 @if (forecasts == null)
 {
@@ -17,6 +17,12 @@ else
 
     <head>
         <style>
+            * {
+                color: white;
+            }
+            body {
+                @bg
+            }
             .CENT {
                 text-align: center;
                 padding: 3rem 2rem 2rem 3rem 2rem;
@@ -30,12 +36,23 @@ else
 
 
         <div class="CENT">
-            <input style="border-radius: 10px" type="text" @bind="CityName" @onkeydown="ValChanged" @oninput="@((e) => { CityName=(string)e.Value;})" />
+            <input style="border-radius: 10px; color: black; " type="text" @bind="CityName" @onkeydown="ValChanged" @oninput="@((e) => { CityName=(string)e.Value;})"/>
+            
             <br /><br />
-            <p>@forecasts.name &nbsp &nbsp  @Math.Round(forecasts.main.temp - 273.15, 2)°C</p>
-            <p>Rychlost větru: @forecasts.wind.speed m/s&nbsp; &nbsp; <img src=@GetIcon()/> @forecasts.weather[0].description</p>
+            <p>@forecasts.name &nbsp; &nbsp;  @Math.Round(forecasts.main.temp - 273.15, 2)°C</p>
+            <p>Rychlost větru: @forecasts.wind.speed m/s&nbsp; &nbsp; <img src=@GetIcon() /> @forecasts.weather[0].description</p>
             <p>Vlhkost: @forecasts.main.humidity % &nbsp; &nbsp; Pocitová teplota: @Math.Round(forecasts.main.feels_like - 273.15, 2)°C</p>
+            @if (Math.Round(forecasts.main.temp - 273.15, 2) > 20)
+            {
+                <img src="/resources/hot.png">
+            }
+            else if (Math.Round(forecasts.main.temp - 273.15, 2) < 0)
+            {
+                <img src="/resources/freezing.png">
+            }
+
         </div>
+        
 
     </body>
 
@@ -45,10 +62,11 @@ else
     public WeatherForecastModel forecasts;
     string CityName { get; set; }
     public Dictionary<string, string> Prekladstatusu { get; set; }
+    public string bg = $"background: linear-gradient(to right, #003973, #e5e5be)";
 
     protected override async Task OnInitializedAsync()
     {
-        //Prekladstatusu = generujpreklad();
+
         forecasts = await ForecastService.GetForecastAsync("London");
 
     }
@@ -57,12 +75,15 @@ else
 
     {
         if (args.Key == "Enter")
-        {
+        {;
+            var defforecast = forecasts;
             try
             {
-                var defforecast = forecasts;
+
+
                 forecasts = await ForecastService.GetForecastAsync(CityName);
-                
+                bg = GetGradient();
+
 
                 if (forecasts.cod == 404)
                 {
@@ -75,8 +96,9 @@ else
             catch (Exception e)
             {
 
+
                 await runtime.InvokeAsync<Object>("window.ShowError", e.Message);
-                //ok hacker
+                forecasts = defforecast;
             }
 
 
@@ -90,7 +112,39 @@ else
         string imgsrc = $"http://openweathermap.org/img/wn/{code}.png";
         return imgsrc;
     }
+    public string GetGradient()
+    {
 
-    
+        Random rng = new Random();
+
+        int r = rng.Next(150, 220);
+        int i1 = rng.Next(1, 90);
+        int i2 = rng.Next(50, 99);
+        string i3 = r.ToString("X");
+        string right = "#e55d87";
+        string left = "#5fc3e4";
+        string defval = $"background: linear-gradient(to right, {right}, {left});";
+        if (Math.Round(forecasts.main.temp - 273.15, 2) < 0)
+        {
+            right = $"#{i1.ToString()}{i2.ToString()}{i3}";
+            left = $"#{i1.ToString()}{i1.ToString()}{i1.ToString()}";
+        }
+        else if (Math.Round(forecasts.main.temp - 273.15, 2) > 20)
+        {
+            right = $"#{i3}{i2.ToString()}{i1.ToString()}";
+            left = $"#{i1.ToString()}{i1.ToString()}{i1.ToString()}";
+        }
+        else
+        {
+            right = $"#{i2.ToString()}{i3}{i2.ToString()}";
+            left = $"#{i1.ToString()}{i1.ToString()}{i1.ToString()}";
+        }
+        string grad = $"background: linear-gradient(to right, {right}, {left});";
+        return grad;
+    }
+
+
+    }
+
 
 }
