@@ -14,7 +14,7 @@ namespace WeatherPage.Data
             HttpClient client = new HttpClient();
             // man
             
-            var response = await client.GetAsync($"http://api.openweathermap.org/data/2.5/weather?q={cityName}&appid=96a6ffa306c18c94f602100a9a1bdcee");
+            var response = await client.GetAsync($"http://api.openweathermap.org/data/2.5/weather?q={cityName}&lang=cz&appid=96a6ffa306c18c94f602100a9a1bdcee");
             string json = await response.Content.ReadAsStringAsync();
             WeatherForecastModel forecast = JsonConvert.DeserializeObject<WeatherForecastModel>(json);
             return forecast;

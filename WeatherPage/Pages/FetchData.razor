@@ -1,58 +1,96 @@
-﻿@page "/fetchdata"
+﻿@page "/"
 
 @using WeatherPage.Data
 @inject WeatherForecastService ForecastService
+@inject IJSRuntime runtime
 
-<h1>Weather forecast</h1>
+<h1 style="text-align:center">Aktuální počasí</h1>
 
-<p>This component demonstrates fetching data from a service.</p>
+<p>Do okýnka napište název města a aplikace vám ukáže aktuální počasí.</p>
 
 @if (forecasts == null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Načítání...</em></p>
 }
 else
 {
-    <input type="text" @bind="CityName" @onkeydown="ValChanged" @oninput="@((e) => { CityName=(string)e.Value;})" />
-    <button type="button" value="enter"></button>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-           
-        </tbody>
-    </table>
-    @forecasts.name;
-    
+
+    <head>
+        <style>
+            .CENT {
+                text-align: center;
+                padding: 3rem 2rem 2rem 3rem 2rem;
+                font-family: Bahnschrift;
+                font-size: large;
+            }
+        </style>
+
+    </head>
+    <body>
+
+
+        <div class="CENT">
+            <input style="border-radius: 10px" type="text" @bind="CityName" @onkeydown="ValChanged" @oninput="@((e) => { CityName=(string)e.Value;})" />
+            <br /><br />
+            <p>@forecasts.name &nbsp &nbsp  @Math.Round(forecasts.main.temp - 273.15, 2)°C</p>
+            <p>Rychlost větru: @forecasts.wind.speed m/s&nbsp; &nbsp; <img src=@GetIcon()/> @forecasts.weather[0].description</p>
+            <p>Vlhkost: @forecasts.main.humidity % &nbsp; &nbsp; Pocitová teplota: @Math.Round(forecasts.main.feels_like - 273.15, 2)°C</p>
+        </div>
+
+    </body>
+
 }
 
 @code {
     public WeatherForecastModel forecasts;
     string CityName { get; set; }
+    public Dictionary<string, string> Prekladstatusu { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-
+        //Prekladstatusu = generujpreklad();
         forecasts = await ForecastService.GetForecastAsync("London");
 
     }
 
     public async void ValChanged(KeyboardEventArgs args)
+
     {
-        if(args.Key == "Enter")
+        if (args.Key == "Enter")
         {
-            forecasts = await ForecastService.GetForecastAsync(CityName);
-            
-            StateHasChanged(); //nezmeni se vzhled stranky pokud se nezavola tento pan CO JE DELEGAT
-            
+            try
+            {
+                var defforecast = forecasts;
+                forecasts = await ForecastService.GetForecastAsync(CityName);
+                
+
+                if (forecasts.cod == 404)
+                {
+                    forecasts = defforecast;
+                    throw new Exception(CityName + " neexistuje.");
+
+                }
+                StateHasChanged(); //nezmeni se vzhled stranky pokud se nezavola tento pan
+            }
+            catch (Exception e)
+            {
+
+                await runtime.InvokeAsync<Object>("window.ShowError", e.Message);
+                //ok hacker
+            }
+
+
+
         }
 
     }
+    public string GetIcon()
+    {
+        string code = forecasts.weather[0].icon;
+        string imgsrc = $"http://openweathermap.org/img/wn/{code}.png";
+        return imgsrc;
+    }
+
+    
 
 }
