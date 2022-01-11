@@ -15,6 +15,8 @@
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link href="css/site.css" rel="stylesheet" />
     <link href="WeatherPage.styles.css" rel="stylesheet" />
+
+   
 </head>
 <body>
     <component type="typeof(App)" render-mode="ServerPrerendered" />
@@ -34,6 +36,10 @@
     <script>
         window.ShowError = (message) => {
             alert(message);
+        };
+
+        window.Debug = (message) => {
+            console.log(message);
         };
     </script>
 </body>
