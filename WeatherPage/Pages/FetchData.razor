@@ -4,8 +4,6 @@
 @inject WeatherForecastService ForecastService
 @inject IJSRuntime runtime
 
-
-
 <head>
     <style>
             * {
@@ -30,7 +28,7 @@
 
 <div class="CENT">
     <input style="border-radius: 10px; color: black; " type="text" @bind="CityName" @onkeydown="ValChanged"
-           @oninput="@( (e) => { CityName=(string)e.Value; } )" />
+           @oninput="@( (e) => { CityName = e.Value as string; } )" />
     @if (forecasts == null)
     {
         <p><em>Načítání...</em></p>
@@ -136,7 +134,7 @@
             left = $"#{i1.ToString()}{i1.ToString()}{i1.ToString()}";
         }
         */
-        right = $"#{'e'}{'e'}{'e'}";
+        right = $"#{255.ToString("X")}{255.ToString("X")}{255.ToString("X")}";
         left = $"#{00}{00}{00}";
 
         string grad = $"background: linear-gradient(to right, {right}, {left});";
